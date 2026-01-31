@@ -1,44 +1,103 @@
-# booking-frontend
+# Restaurant Booking System - Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Interfaz web desarrollada con Vue 3 para un sistema de gestión de reservas de restaurante.
 
-## Recommended IDE Setup
+## 🚀 Tecnologías
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Vue 3 (Composition API)
+- Vite
+- Pinia (State Management)
+- Vue Router
+- PrimeVue (UI Components)
+- Tailwind CSS 4
+- JavaScript
 
-## Recommended Browser Setup
+## 📋 Características
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- ✅ Dashboard con estadísticas en tiempo real
+- ✅ Gestión completa de mesas con DataTable
+- ✅ Gestión de usuarios con validaciones
+- ✅ Gestión de reservas con filtros avanzados
+- ✅ Formulario público de reservas (wizard de 4 pasos)
+- ✅ Validación de disponibilidad en tiempo real
+- ✅ Notificaciones toast
+- ✅ Diálogos de confirmación
+- ✅ Diseño responsive
 
-## Customize configuration
+## 🎨 Vistas
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+1. **Dashboard**: Resumen general con métricas y acciones rápidas
+2. **Mesas**: CRUD completo con tabla editable
+3. **Usuarios**: Gestión de usuarios del sistema
+4. **Reservas**: Gestión con filtros por fecha y estado
+5. **Nueva Reserva**: Formulario paso a paso para clientes
 
-## Project Setup
+## ⚙️ Configuración
 
-```sh
+1. **Instalar dependencias:**
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+2. **Configurar URL del backend:**
 
-```sh
+En `src/services/api.js`, verifica:
+```javascript
+const API_BASE_URL = 'http://localhost:8081/api'
+```
+
+3. **Ejecutar en desarrollo:**
+```bash
 npm run dev
 ```
 
-### Compile and Minify for Production
+La aplicación iniciará en `http://localhost:5173`
 
-```sh
+4. **Build para producción:**
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
+## 📁 Estructura del Proyecto
 ```
+src/
+├── components/      # Componentes reutilizables
+│   └── AppLayout.vue
+├── views/          # Vistas principales
+│   ├── DashboardView.vue
+│   ├── TablesView.vue
+│   ├── UsersView.vue
+│   ├── ReservationsView.vue
+│   └── NewReservationView.vue
+├── services/       # Servicios API
+│   ├── api.js
+│   ├── tableService.js
+│   ├── userService.js
+│   └── reservationService.js
+├── stores/         # Estado global (Pinia)
+│   ├── tableStore.js
+│   ├── userStore.js
+│   └── reservationStore.js
+└── router/         # Rutas
+    └── index.js
+```
+
+## 🎯 Flujo de Estados de Reserva
+```
+PENDING → CONFIRMED → SEATED → COMPLETED
+   ↓
+CANCELLED
+   ↓
+NO_SHOW
+```
+
+## 🔌 Conexión con Backend
+
+El frontend se comunica con el backend mediante fetch API:
+- Todas las peticiones pasan por `services/api.js`
+- Los stores (Pinia) manejan el estado global
+- Las vistas consumen los stores
+
+## 👨‍💻 Autor
+
+[JOHAN PIEDRA]
