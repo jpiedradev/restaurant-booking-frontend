@@ -379,6 +379,7 @@
       </template>
     </Dialog>
   </AppLayout>
+  <Toast/>
   <ConfirmDialog/>
 </template>
 
@@ -398,6 +399,7 @@ import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Calendar from 'primevue/calendar'
 import Dialog from 'primevue/dialog'
+import Toast from 'primevue/toast'
 
 const router = useRouter()
 const reservationStore = useReservationStore()

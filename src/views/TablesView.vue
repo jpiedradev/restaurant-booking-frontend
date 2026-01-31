@@ -287,6 +287,7 @@
         />
       </template>
     </Dialog>
+    <Toast/>
     <ConfirmDialog/>
   </AppLayout>
 </template>
@@ -310,6 +311,7 @@ import Tag from 'primevue/tag'
 import Badge from 'primevue/badge'
 import Toolbar from 'primevue/toolbar'
 import ConfirmDialog from 'primevue/confirmdialog'
+import Toast from 'primevue/toast'
 
 const tableStore = useTableStore()
 const toast = useToast()

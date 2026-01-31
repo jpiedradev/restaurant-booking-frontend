@@ -192,6 +192,8 @@
       </Card>
     </div>
 
+
+
     <!-- Loading -->
     <div v-if="loading" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg shadow-xl">
@@ -199,6 +201,7 @@
         <p class="mt-4 text-gray-700">Cargando datos...</p>
       </div>
     </div>
+    <Toast/>
   </AppLayout>
 </template>
 
@@ -213,6 +216,7 @@ import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Badge from 'primevue/badge'
 import Tag from 'primevue/tag'
+import Toast from 'primevue/toast'
 
 const tableStore = useTableStore()
 const userStore = useUserStore()
