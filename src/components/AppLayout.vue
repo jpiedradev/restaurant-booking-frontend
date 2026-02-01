@@ -31,6 +31,7 @@
               Mesas
             </router-link>
             <router-link
+              v-if="authStore.isAdmin"
               to="/users"
               class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
               active-class="bg-blue-100 text-blue-700"
@@ -48,17 +49,44 @@
             </router-link>
           </nav>
 
-          <!-- Botón de nueva reserva -->
-          <div>
+          <!-- Usuario y botones -->
+          <div class="flex items-center gap-4">
+            <!-- Info del usuario -->
+            <div class="hidden md:block text-right">
+              <p class="text-sm font-semibold text-gray-900">
+                {{ authStore.user?.fullName }}
+              </p>
+              <p class="text-xs text-gray-600">
+                {{ getRoleLabel(authStore.user?.role) }}
+              </p>
+            </div>
+
+            <!-- Botón de nueva reserva -->
             <Button
               label="Nueva Reserva"
               icon="pi pi-plus"
-              @click="router.push('/new-reservation')"
+              size="small"
+              @click="$router.push('/new-reservation')"
+            />
+
+            <!-- Menú de usuario -->
+            <Button
+              icon="pi pi-user"
+              severity="secondary"
+              rounded
+              @click="toggleUserMenu"
             />
           </div>
         </div>
       </div>
     </header>
+
+    <!-- Menú desplegable del usuario -->
+    <Menu
+      ref="userMenu"
+      :model="menuItems"
+      :popup="true"
+    />
 
     <!-- Contenido principal -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -68,8 +96,67 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
-const router = useRouter()
+import Menu from 'primevue/menu'
 
+const router = useRouter()
+const authStore = useAuthStore()
+const confirm = useConfirm()
+const userMenu = ref()
+
+// Función para obtener el label del rol
+function getRoleLabel(role) {
+  const labels = {
+    'CUSTOMER': 'Cliente',
+    'STAFF': 'Personal',
+    'ADMIN': 'Administrador'
+  }
+  return labels[role] || role
+}
+
+// Toggle del menú de usuario
+function toggleUserMenu(event) {
+  userMenu.value.toggle(event)
+}
+
+// Items del menú de usuario
+const menuItems = computed(() => [
+  {
+    label: 'Mi Perfil',
+    icon: 'pi pi-user',
+    command: () => {
+      // Implementar más adelante
+      console.log('Ver perfil')
+    }
+  },
+  {
+    separator: true
+  },
+  {
+    label: 'Cerrar Sesión',
+    icon: 'pi pi-sign-out',
+    command: () => {
+      confirmLogout()
+    }
+  }
+])
+
+// Confirmar logout
+function confirmLogout() {
+  confirm.require({
+    message: '¿Estás seguro de cerrar sesión?',
+    header: 'Cerrar Sesión',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Sí, cerrar',
+    rejectLabel: 'Cancelar',
+    accept: () => {
+      authStore.logout()
+      router.push('/login')
+    }
+  })
+}
 </script>

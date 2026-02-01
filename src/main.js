@@ -8,6 +8,7 @@ import Aura from '@primevue/themes/aura'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 import { Tooltip } from 'primevue'
+import {useAuthStore} from './stores/authStore'
 
 import App from './App.vue'
 import router from './router'
@@ -24,5 +25,8 @@ app.use(PrimeVue, {
 app.use(ToastService)
 app.use(ConfirmationService)
 app.directive('tooltip', Tooltip)
+
+const authStore = useAuthStore()
+authStore.initialize()
 
 app.mount('#app')
