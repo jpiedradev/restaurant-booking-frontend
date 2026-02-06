@@ -498,7 +498,15 @@ async function handleSubmit() {
 
   try {
     if (isEdit.value && selectedUser.value) {
-      await userStore.updateUser(selectedUser.value.id, formData.value)
+      const updateData = {
+        username: formData.value.username,
+        email: formData.value.email,
+        fullName: formData.value.fullName,
+        phone: formData.value.phone,
+        role: formData.value.role
+      }
+
+      await userStore.updateUser(selectedUser.value.id, updateData)
       toast.add({
         severity: 'success',
         summary: 'Usuario actualizado',

@@ -21,13 +21,25 @@ const router = createRouter({
       path: '/',
       name: 'dashboard',
       component: DashboardView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/staff',
+      name: 'dashboard-staff',
+      component: () => import('../views/DashboardStaffView.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/my-reservations',
+      name: 'my-reservations',
+      component: () => import('../views/MyReservationsView.vue'),
+      meta: { requiresAuth: true, requiresCustomer: true }
     },
     {
       path: '/tables',
       name: 'tables',
       component: () => import('../views/TablesView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdminOrStaff: true }
     },
     {
       path: '/users',
@@ -39,7 +51,7 @@ const router = createRouter({
       path: '/reservations',
       name: 'reservations',
       component: () => import('../views/ReservationsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdminOrStaff: true }
     },
     {
       path: '/new-reservation',
@@ -62,17 +74,50 @@ router.beforeEach((to, from, next) => {
 
   // Rutas que requieren ser invitado (no logueado)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/')
+    // Redirigir según rol
+    if (authStore.isAdmin) {
+      next('/')
+    } else if (authStore.isStaff) {
+      next('/staff')
+    } else {
+      next('/my-reservations')
+    }
     return
   }
 
   // Rutas que requieren ser admin
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
-    next('/')
+    next(getDefaultRoute(authStore))
+    return
+  }
+
+  // Rutas que requieren ser staff
+  if (to.meta.requiresStaff && !authStore.isStaff) {
+    next(getDefaultRoute(authStore))
+    return
+  }
+
+  // Rutas que requieren ser customer
+  if (to.meta.requiresCustomer && !authStore.isCustomer) {
+    next(getDefaultRoute(authStore))
+    return
+  }
+
+  // Rutas que requieren ser admin o staff
+  if (to.meta.requiresAdminOrStaff && !authStore.isAdmin && !authStore.isStaff) {
+    next(getDefaultRoute(authStore))
     return
   }
 
   next()
 })
+
+// Función helper para obtener la ruta por defecto según rol
+function getDefaultRoute(authStore) {
+  if (authStore.isAdmin) return '/'
+  if (authStore.isStaff) return '/staff'
+  if (authStore.isCustomer) return '/my-reservations'
+  return '/login'
+}
 
 export default router

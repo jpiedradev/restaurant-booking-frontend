@@ -193,56 +193,86 @@
             </small>
           </div>
 
-          <!-- Paso 3: Datos personales -->
-          <div v-show="currentStep === 2" class="space-y-6">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">
-              <i class="pi pi-user text-blue-600 mr-2"></i>
-              Tus datos de contacto
-            </h3>
+          <!-- Paso 3: Tus datos -->
+          <div v-show="currentStep === 2" class="space-y-4">
+            <h3 class="text-xl font-semibold mb-4">Tus datos</h3>
 
-            <!-- Nombre completo -->
-            <div class="flex flex-col gap-2">
-              <label class="font-semibold">Nombre completo *</label>
-              <InputText
-                v-model="formData.fullName"
-                placeholder="Juan Pérez García"
-                :class="{ 'p-invalid': errors.fullName }"
-              />
-              <small v-if="errors.fullName" class="text-red-500">
-                {{ errors.fullName }}
-              </small>
+            <!-- Si está logueado, mostrar sus datos (solo lectura) -->
+            <div v-if="isLoggedIn" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center mb-3">
+                <i class="pi pi-user text-blue-600 text-2xl mr-3"></i>
+                <div>
+                  <p class="font-semibold text-gray-900">{{ loggedUser.fullName }}</p>
+                  <p class="text-sm text-gray-600">{{ loggedUser.email }}</p>
+                </div>
+              </div>
+              <p class="text-sm text-blue-700">
+                <i class="pi pi-info-circle mr-1"></i>
+                Reservando como usuario logueado
+              </p>
             </div>
 
-            <!-- Email -->
-            <div class="flex flex-col gap-2">
-              <label class="font-semibold">Email *</label>
-              <InputText
-                v-model="formData.email"
-                type="email"
-                placeholder="correo@ejemplo.com"
-                :class="{ 'p-invalid': errors.email }"
-              />
-              <small v-if="errors.email" class="text-red-500">{{ errors.email }}</small>
+            <!-- Si NO está logueado, formulario editable -->
+            <div v-else class="space-y-4">
+              <!-- Nombre completo -->
+              <div class="flex flex-col gap-2">
+                <label for="fullName" class="font-semibold">Nombre completo *</label>
+                <InputText
+                  id="fullName"
+                  v-model="formData.fullName"
+                  placeholder="Juan Pérez García"
+                  :class="{ 'p-invalid': errors.fullName }"
+                />
+                <small v-if="errors.fullName" class="text-red-500">
+                  {{ errors.fullName }}
+                </small>
+              </div>
+
+              <!-- Email -->
+              <div class="flex flex-col gap-2">
+                <label for="email" class="font-semibold">Email *</label>
+                <InputText
+                  id="email"
+                  v-model="formData.email"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  :class="{ 'p-invalid': errors.email }"
+                />
+                <small v-if="errors.email" class="text-red-500">
+                  {{ errors.email }}
+                </small>
+              </div>
+
+              <!-- Teléfono -->
+              <div class="flex flex-col gap-2">
+                <label for="phone" class="font-semibold">Teléfono *</label>
+                <InputText
+                  id="phone"
+                  v-model="formData.phone"
+                  placeholder="987654321"
+                  :class="{ 'p-invalid': errors.phone }"
+                />
+                <small v-if="errors.phone" class="text-red-500">
+                  {{ errors.phone }}
+                </small>
+              </div>
+
+              <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <p class="text-sm text-gray-600">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  Si no tienes cuenta, se creará automáticamente
+                </p>
+              </div>
             </div>
 
-            <!-- Teléfono -->
+            <!-- Peticiones especiales (siempre visible) -->
             <div class="flex flex-col gap-2">
-              <label class="font-semibold">Teléfono *</label>
-              <InputText
-                v-model="formData.phone"
-                placeholder="987654321"
-                :class="{ 'p-invalid': errors.phone }"
-              />
-              <small v-if="errors.phone" class="text-red-500">{{ errors.phone }}</small>
-            </div>
-
-            <!-- Peticiones especiales -->
-            <div class="flex flex-col gap-2">
-              <label class="font-semibold">Peticiones especiales (opcional)</label>
+              <label for="specialRequests" class="font-semibold">Peticiones especiales (opcional)</label>
               <Textarea
+                id="specialRequests"
                 v-model="formData.specialRequests"
-                rows="4"
-                placeholder="Ej: Cumpleaños, necesitamos velas, mesa junto a la ventana, etc."
+                rows="3"
+                placeholder="Alergias, ocasiones especiales, preferencias..."
               />
             </div>
           </div>
@@ -384,29 +414,29 @@
 </template>
 
 <script setup>
-import { ref,watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import { useReservationStore } from '@/stores/reservationStore'
 import { useUserStore } from '@/stores/userStore'
-import { reservationService } from '@/services/reservationService'
 import { tableService } from '@/services/tableService'
+import { reservationService } from '@/services/reservationService'
+import { authService } from '@/services/authService'
 import { useToast } from 'primevue/usetoast'
-import AppLayout from '@/components/AppLayout.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-import Textarea from 'primevue/textarea'
 import Calendar from 'primevue/calendar'
+import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
-import Toast from 'primevue/toast'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const reservationStore = useReservationStore()
 const userStore = useUserStore()
 const toast = useToast()
 
-// Pasos del wizard
 const steps = [
   { label: 'Fecha y hora' },
   { label: 'Mesa' },
@@ -415,21 +445,12 @@ const steps = [
 ]
 
 const currentStep = ref(0)
-const submitting = ref(false)
+const loading = ref(false)
 const loadingTables = ref(false)
-const showSuccessDialog = ref(false)
 const availableTables = ref([])
+const showSuccessDialog = ref(false)
 
-// Fecha mínima (hoy)
-const minDate = ref(new Date())
-
-// Horas disponibles
-const availableTimes = [
-  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-  '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
-]
-
-// Datos del formulario
+// Formulario de datos
 const formData = ref({
   date: null,
   time: null,
@@ -441,7 +462,6 @@ const formData = ref({
   specialRequests: ''
 })
 
-// Errores
 const errors = ref({
   date: '',
   time: '',
@@ -452,13 +472,22 @@ const errors = ref({
   phone: ''
 })
 
-// Opciones de ubicación
-const locationOptions = [
-  { label: 'Interior', value: 'INDOOR' },
-  { label: 'Terraza', value: 'OUTDOOR' },
-  { label: 'Junto a ventana', value: 'WINDOW' },
-  { label: 'VIP', value: 'VIP' }
-]
+const minDate = ref(new Date())
+const availableTimes = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+  '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00']
+
+// ====== NUEVO: Detectar si está logueado ======
+const isLoggedIn = computed(() => authStore.isAuthenticated)
+const loggedUser = computed(() => authStore.user)
+
+// Si está logueado, pre-llenar los datos
+onMounted(() => {
+  if (isLoggedIn.value && loggedUser.value) {
+    formData.value.fullName = loggedUser.value.fullName || ''
+    formData.value.email = loggedUser.value.email || ''
+    formData.value.phone = loggedUser.value.phone || ''
+  }
+})
 
 // Watch para cargar mesas cuando cambian fecha, hora o comensales
 watch([() => formData.value.date, () => formData.value.time, () => formData.value.guests],
@@ -469,80 +498,12 @@ watch([() => formData.value.date, () => formData.value.time, () => formData.valu
   }
 )
 
-// Cargar mesas disponibles
-async function loadAvailableTables() {
-  if (!formData.value.date || !formData.value.time || !formData.value.guests) return
+// ====== Funciones de validación por paso ======
 
-  loadingTables.value = true
-  formData.value.tableId = null
-
-  try {
-    // Obtener mesas con capacidad suficiente
-    const tablesWithCapacity = await tableService.getAvailableTablesByCapacity(
-      formData.value.guests
-    )
-
-    // Filtrar solo las que están disponibles en la fecha/hora seleccionada
-    const dateString = formData.value.date.toISOString().split('T')[0]
-    const timeString = formData.value.time + ':00'
-
-    const availablePromises = tablesWithCapacity.map(async (table) => {
-      const isAvailable = await reservationService.checkAvailability(
-        table.id,
-        dateString,
-        timeString
-      )
-      return isAvailable ? table : null
-    })
-
-    const results = await Promise.all(availablePromises)
-    availableTables.value = results.filter(table => table !== null)
-
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: error.message || 'No se pudieron cargar las mesas',
-      life: 3000
-    })
-    availableTables.value = []
-  } finally {
-    loadingTables.value = false
-  }
-}
-
-// Funciones de formato
-function getLocationLabel(location) {
-  const option = locationOptions.find(opt => opt.value === location)
-  return option?.label || location
-}
-
-function formatDateLong(date) {
-  if (!date) return ''
-  return date.toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
-}
-
-function getSelectedTableNumber() {
-  const table = availableTables.value.find(t => t.id === formData.value.tableId)
-  return table?.tableNumber || ''
-}
-
-function getSelectedTableLocation() {
-  const table = availableTables.value.find(t => t.id === formData.value.tableId)
-  return table ? getLocationLabel(table.location) : ''
-}
-
-// Validaciones por paso
 function validateStep0() {
   errors.value.date = ''
   errors.value.time = ''
   errors.value.guests = ''
-
   let isValid = true
 
   if (!formData.value.date) {
@@ -556,7 +517,7 @@ function validateStep0() {
   }
 
   if (!formData.value.guests || formData.value.guests < 1) {
-    errors.value.guests = 'Indica el número de comensales'
+    errors.value.guests = 'Ingresa el número de comensales'
     isValid = false
   }
 
@@ -574,28 +535,38 @@ function validateStep1() {
   return true
 }
 
+function getSelectedTableLocation() {
+  const table = availableTables.value.find(t => t.id === formData.value.tableId)
+  return table ? getLocationLabel(table.location) : ''
+}
+
 function validateStep2() {
+  // Si está logueado, no validamos (usamos sus datos)
+  if (isLoggedIn.value) {
+    return true
+  }
+
+  // Si NO está logueado, validar los campos
   errors.value.fullName = ''
   errors.value.email = ''
   errors.value.phone = ''
-
   let isValid = true
 
   if (!formData.value.fullName || formData.value.fullName.trim() === '') {
-    errors.value.fullName = 'El nombre es obligatorio'
+    errors.value.fullName = 'Ingresa tu nombre completo'
     isValid = false
   }
 
   if (!formData.value.email || formData.value.email.trim() === '') {
-    errors.value.email = 'El email es obligatorio'
+    errors.value.email = 'Ingresa tu email'
     isValid = false
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)) {
-    errors.value.email = 'El email no es válido'
+    errors.value.email = 'Email no válido'
     isValid = false
   }
 
   if (!formData.value.phone || formData.value.phone.trim() === '') {
-    errors.value.phone = 'El teléfono es obligatorio'
+    errors.value.phone = 'Ingresa tu teléfono'
     isValid = false
   } else if (!/^[0-9]{9,15}$/.test(formData.value.phone)) {
     errors.value.phone = 'El teléfono debe tener entre 9 y 15 dígitos'
@@ -605,7 +576,8 @@ function validateStep2() {
   return isValid
 }
 
-// Navegación entre pasos
+// ====== Navegación entre pasos ======
+
 async function nextStep() {
   let isValid = false
 
@@ -624,82 +596,247 @@ async function nextStep() {
       break
   }
 
-  if (isValid) {
+  if (isValid && currentStep.value < steps.length - 1) {
     currentStep.value++
   }
 }
 
 function previousStep() {
-  currentStep.value--
+  if (currentStep.value > 0) {
+    currentStep.value--
+  }
 }
 
-// Enviar reserva
-async function submitReservation() {
-  submitting.value = true
+// ====== Cargar mesas disponibles ======
+
+async function loadAvailableTables() {
+  const date = formData.value.date
+  const time = formData.value.time
+  const guests = formData.value.guests
+
+  if (!date || !time || !guests) {
+    availableTables.value = []
+    return
+  }
+
+  loadingTables.value = true
+  availableTables.value = []
 
   try {
-    // Primero crear o buscar usuario
+    const dateString = formatDateForAPI(date)
+    const timeString = time
+
+    console.log('Buscando mesas para:', { dateString, timeString, guests })
+
+    const tablesWithCapacity = await tableService.getAvailableTablesByCapacity(guests)
+
+    console.log('Mesas con capacidad:', tablesWithCapacity)
+
+    if (!tablesWithCapacity || tablesWithCapacity.length === 0) {
+      console.log('No hay mesas con esa capacidad')
+      availableTables.value = []
+      loadingTables.value = false
+      return
+    }
+
+    const availablePromises = tablesWithCapacity.map(async (table) => {
+      try {
+        const isAvailable = await reservationService.checkAvailability(
+          table.id,
+          dateString,
+          timeString
+        )
+        console.log(`Mesa ${table.tableNumber}:`, isAvailable ? 'Disponible' : 'No disponible')
+        return isAvailable ? table : null
+      } catch (error) {
+        console.error(`Error verificando mesa ${table.tableNumber}:`, error)
+        return null
+      }
+    })
+
+    const results = await Promise.all(availablePromises)
+    availableTables.value = results.filter(table => table !== null)
+
+    console.log('Mesas disponibles finales:', availableTables.value)
+
+  } catch (error) {
+    console.error('Error al cargar mesas:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message || 'No se pudieron cargar las mesas disponibles',
+      life: 3000
+    })
+  } finally {
+    loadingTables.value = false
+  }
+}
+
+// ====== Enviar reserva ======
+
+async function submitReservation() {
+  loading.value = true
+
+  try {
     let userId = null
 
-    // Buscar si el usuario existe por email
-    try {
-      const existingUser = await userStore.findByEmail(formData.value.email)
-      userId = existingUser.id
-    } catch {
-      // Si no existe, crear nuevo usuario
-      const newUser = await userStore.createUser({
-        username: formData.value.email.split('@')[0],
-        email: formData.value.email,
-        fullName: formData.value.fullName,
-        phone: formData.value.phone,
-        password: 'temp123',  // Password temporal
-        role: 'CUSTOMER'
-      })
-      userId = newUser.id
+    // Si está logueado, usar su ID directamente
+    if (isLoggedIn.value && loggedUser.value) {
+      userId = loggedUser.value.id
+      console.log('Usuario logueado:', userId)
+    } else {
+      // Si NO está logueado, verificar si el usuario existe o crearlo
+      try {
+        const existingUser = await userStore.findByEmail(formData.value.email)
+        userId = existingUser.id
+        console.log('Usuario existente encontrado:', userId)
+      } catch (error) {
+        // Usuario no existe, crear uno nuevo
+        console.log('Usuario no existe, creando nuevo...',error)
+
+        try {
+          const registerData = {
+            username: formData.value.email.split('@')[0],
+            email: formData.value.email,
+            fullName: formData.value.fullName,
+            phone: formData.value.phone,
+            password: 'temp123456'
+          }
+
+          const registrationResponse = await authService.register(registerData)
+          userId = registrationResponse.user.id
+          console.log('Nuevo usuario creado:', userId)
+
+          toast.add({
+            severity: 'info',
+            summary: 'Usuario registrado',
+            detail: 'Se ha creado tu cuenta automáticamente',
+            life: 3000
+          })
+        } catch (registerError) {
+          console.error('Error al registrar usuario:', registerError)
+          toast.add({
+            severity: 'error',
+            summary: 'Error al crear usuario',
+            detail: registerError.message || 'No se pudo crear el usuario',
+            life: 5000
+          })
+          return
+        }
+      }
     }
 
     // Crear la reserva
-    const dateString = formData.value.date.toISOString().split('T')[0]
-    const timeString = formData.value.time + ':00'
-
-    await reservationStore.createReservation({
+    const reservationData = {
       userId: userId,
       tableId: formData.value.tableId,
-      reservationDate: dateString,
-      reservationTime: timeString,
+      reservationDate: formatDateForAPI(formData.value.date),
+      reservationTime: formData.value.time,
       guests: formData.value.guests,
-      specialRequests: formData.value.specialRequests
+      specialRequests: formData.value.specialRequests || null
+    }
+
+    console.log('Creando reserva:', reservationData)
+
+    await reservationStore.createReservation(reservationData)
+
+    toast.add({
+      severity: 'success',
+      summary: '¡Reserva exitosa!',
+      detail: `Tu mesa ha sido reservada para el ${formatDateDisplay(formData.value.date)} a las ${formData.value.time}`,
+      life: 5000
     })
 
     showSuccessDialog.value = true
 
   } catch (error) {
+    console.error('Error completo:', error)
     toast.add({
       severity: 'error',
-      summary: 'Error',
-      detail: error.message || 'No se pudo crear la reserva',
-      life: 3000
+      summary: 'Error al crear la reserva',
+      detail: error.message || 'Ocurrió un error inesperado. Por favor, intenta de nuevo.',
+      life: 5000
     })
   } finally {
-    submitting.value = false
+    loading.value = false
   }
 }
 
-// Resetear formulario
-function resetForm() {
-  formData.value = {
-    date: null,
-    time: null,
-    guests: 2,
-    tableId: null,
-    fullName: '',
-    email: '',
-    phone: '',
-    specialRequests: ''
+// ====== Funciones auxiliares ======
+function formatDateLong(date) {
+  if (!date) return ''
+  return date.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+function formatDateForAPI(date) {
+  if (!date) return ''
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateDisplay(date) {
+  if (!date) return ''
+  return date.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+function formatTime(timeString) {
+  return timeString.substring(0, 5)
+}
+
+function getLocationLabel(location) {
+  const labels = {
+    'INDOOR': 'Interior',
+    'OUTDOOR': 'Exterior',
+    'WINDOW': 'Junto a la ventana',
+    'VIP': 'VIP'
   }
-  currentStep.value = 0
+  return labels[location] || location
+}
+
+function getSelectedTableNumber() {
+  const table = availableTables.value.find(t => t.id === formData.value.tableId)
+  return table?.tableNumber || ''
+}
+
+function handleSuccessAction(action) {
   showSuccessDialog.value = false
-  availableTables.value = []
+
+  if (action === 'reservations') {
+    if (isLoggedIn.value) {
+      if (authStore.isCustomer) {
+        router.push('/my-reservations')
+      } else {
+        router.push('/reservations')
+      }
+    } else {
+      router.push('/login')
+    }
+  } else if (action === 'new') {
+    // Resetear formulario
+    currentStep.value = 0
+    formData.value = {
+      date: null,
+      time: null,
+      guests: 2,
+      tableId: null,
+      fullName: isLoggedIn.value ? loggedUser.value.fullName : '',
+      email: isLoggedIn.value ? loggedUser.value.email : '',
+      phone: isLoggedIn.value ? loggedUser.value.phone : '',
+      specialRequests: ''
+    }
+    availableTables.value = []
+  }
 }
 
 // Ir a reservas

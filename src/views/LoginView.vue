@@ -134,8 +134,14 @@ async function handleLogin() {
       life: 3000
     })
 
-    // Redirigir al dashboard
-    router.push('/')
+    // Redirigir según rol
+    if (authStore.isAdmin) {
+      router.push('/')
+    } else if (authStore.isStaff) {
+      router.push('/staff')
+    } else {
+      router.push('/my-reservations')
+    }
 
   } catch (error) {
     errorMessage.value = error.message || 'Error al iniciar sesión'

@@ -9,7 +9,11 @@ export const reservationService = {
     return api.get(`/reservations/${id}`)
   },
 
-  async getReservationsByUser(userId) {
+  async getMyReservations() {
+    return api.get('/reservations/my-reservations')
+  },
+
+  async getReservationsByUserId(userId) {
     return api.get(`/reservations/user/${userId}`)
   },
 
@@ -26,11 +30,14 @@ export const reservationService = {
   },
 
   async checkAvailability(tableId, date, time) {
-    return api.get(`/reservations/check-availability?tableId=${tableId}&date=${date}&time=${time}`)
+    const response = await fetch(
+      `http://localhost:8081/api/reservations/check-availability?tableId=${tableId}&date=${date}&time=${time}`
+    )
+    return response.json()
   },
 
-  async createReservation(reservation) {
-    return api.post('/reservations', reservation)
+  async createReservation(reservationData) {
+    return api.post('/reservations', reservationData)
   },
 
   async updateReservationStatus(id, status) {

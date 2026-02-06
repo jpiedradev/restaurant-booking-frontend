@@ -67,6 +67,23 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  /**
+   * Busca un usuario por email
+   */
+  async function findByEmail(email) {
+    const response = await fetch(`http://localhost:8080/api/users/email/${email}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Usuario no encontrado')
+    }
+
+    return response.json()
+  }
+
   return {
     users,
     loading,
@@ -74,6 +91,7 @@ export const useUserStore = defineStore('user', () => {
     fetchUsers,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    findByEmail
   }
 })

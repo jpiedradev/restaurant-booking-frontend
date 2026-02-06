@@ -14,7 +14,9 @@
 
           <!-- Navegación principal -->
           <nav class="hidden md:flex space-x-4">
+            <!-- Dashboard (ADMIN) -->
             <router-link
+              v-if="authStore.isAdmin"
               to="/"
               class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
               active-class="bg-blue-100 text-blue-700"
@@ -22,7 +24,32 @@
               <i class="pi pi-chart-line mr-2"></i>
               Dashboard
             </router-link>
+
+            <!-- Dashboard Staff (STAFF) -->
             <router-link
+              v-if="authStore.isStaff"
+              to="/staff"
+              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <i class="pi pi-chart-line mr-2"></i>
+              Panel Staff
+            </router-link>
+
+            <!-- Mis Reservas (CUSTOMER) -->
+            <router-link
+              v-if="authStore.isCustomer"
+              to="/my-reservations"
+              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
+              active-class="bg-blue-100 text-blue-700"
+            >
+              <i class="pi pi-bookmark mr-2"></i>
+              Mis Reservas
+            </router-link>
+
+            <!-- Mesas (ADMIN y STAFF) -->
+            <router-link
+              v-if="authStore.isAdmin || authStore.isStaff"
               to="/tables"
               class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
               active-class="bg-blue-100 text-blue-700"
@@ -30,6 +57,8 @@
               <i class="pi pi-table mr-2"></i>
               Mesas
             </router-link>
+
+            <!-- Usuarios (solo ADMIN) -->
             <router-link
               v-if="authStore.isAdmin"
               to="/users"
@@ -39,7 +68,10 @@
               <i class="pi pi-users mr-2"></i>
               Usuarios
             </router-link>
+
+            <!-- Reservas (ADMIN y STAFF) -->
             <router-link
+              v-if="authStore.isAdmin || authStore.isStaff"
               to="/reservations"
               class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100"
               active-class="bg-blue-100 text-blue-700"
